@@ -1,7 +1,11 @@
-/*
- *  This file contains an ISA-portable PIN tool for tracing memory accesses.
- */
 
+//
+//  maple.cpp
+//  MAPLE: Memory Access ProfiLEr
+//
+//  Created by Reza Karimi on 07/20/2018.
+//  Copyright © 2018 Reza Karimi. All rights reserved.
+//
 #include <stdio.h>
 #include "pin.H"
 #include <fstream>
