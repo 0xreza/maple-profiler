@@ -4,10 +4,6 @@
 
 #include <stdio.h>
 #include "pin.H"
-
-//My Additions
-// #include <vector>
-// #include <tuple>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -18,15 +14,10 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <time.h>
-
 #include <bitset>
+#include <fcntl.h>  
+#include <unistd.h> 
 
-#include <fcntl.h>  /* For O_RDWR */
-#include <unistd.h> /* For open(), creat() */
-
-//My Additions
-// typedef tuple<unsigned int, unsigned int, int, int> page_tuple; //page_number, threadid, rcount, wcount
-// vector <page_tuple> page_v; // tuple of vector
 PIN_LOCK lock;
 
 FILE *trace;
@@ -54,9 +45,6 @@ VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v)
     //pid_t pid = getpid();
     //pid_t tid = syscall(SYS_gettid);
     cout << "Thread " << threadid << syscall(SYS_gettid) << endl;
-
-    //fprintf(out, "thread begin %d\n",threadid);
-    //fflush(out);
     PIN_ReleaseLock(&lock);
 }
 
@@ -65,8 +53,6 @@ VOID ThreadFini(THREADID threadid, const CONTEXT *ctxt, INT32 code, VOID *v)
 {
     PIN_GetLock(&lock, threadid + 1);
     cout << "thread end: " << threadid << endl;
-    //fprintf(out, "thread end %d code %d\n",threadid, code);
-    //fflush(out);
     PIN_ReleaseLock(&lock);
 }
 
@@ -133,24 +119,12 @@ string GetBinaryStringFromHexString(string sHex)
 // Print a memory read record
 VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
 {
-    // write(output_file, "R", 1);
-    //buffer.clear();//clear any bits set
-    // stringstream buffer;
-
-    // start logging the accesses when thread 1 begins
-
-    start_logging = 1;
-
-    if (start_logging == 1)
-    {
-
         PIN_GetLock(&lock, threadid + 1);
         buffer << addr;
 
         string s = buffer.str();
         s.insert(2, "0000");
         s = s.substr(2, (s.length() - 1));
-        //cout << "s: " << s << endl;
 
         string addr_binary = GetBinaryStringFromHexString(s);
 
@@ -158,76 +132,18 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
         string page_binary = bitset<64>(4096).to_string<char, std::string::traits_type, std::string::allocator_type>();
 
         unsigned long page_decimal = bitset<64>(page_binary).to_ulong();
-        unsigned long addr_decimal = bitset<64>(addr_binary).to_ulong();
-        //buffer << setw(16) << setfill('0') << addr;
-
-        // cout << "page_binary: " << page_binary << endl;
-        // cout << "addr_binary: " << addr_binary << endl;
-        // cout << "page_decimal: " << page_decimal << " addr_decimal: " << addr_decimal << endl;
-
-        //cout << "~page_binary: " << ~(page_decimal-1) << endl;
+        unsigned long addr_decimal = bitset<64>(addr_binary).to_ulong();;
         unsigned int virtual_page = (addr_decimal & ~(page_decimal - 1));
-        //cout << "Shifting Right: " << (addr_decimal >> 12) << endl;
-        //cout << "virtual_page: " << virtual_page << endl;
-        //int page_number_divided = address / sz ;
-        // cout << "page_number_divided: " << page_number_divided << endl;
-        // cout << "buffer before: " << buffer.str() << " addr before: " << addr << endl;
-
-        //buffer << hex << setw(16) << setfill('0') << addr;
-        //buffer << buffer.str();
-        // string firstEightBits = buffer.str().substr(0,3);
-        //  unsigned int page_number = stoi(firstEightBits, 0, 16);
-
-        // cout << "buffer: " << buffer.str() << " firstEightBits: " << hex << firstEightBits << " page_number: " << page_number << " addr: " << addr << endl;
-        // cout << "size: " << page_v.size() << endl;
-        // if (page_v.size() <= 0){
-        //    rcount = 1;
-        //    page_v.push_back(make_tuple(virtual_page, PIN_ThreadId(), rcount, wcount));
-        //page_v.push_back(make_tuple(page_number, 1, count));
-        //}
-
-        // int page_exist = 0;
-
-        // check if the page exist and just increment the counter
-        // for (unsigned int i = 0; i < page_v.size(); i++)
-        // {
-        //     //cout << "size: " << page_v.size() << endl;
-        //     if (get<0>(page_v.at(i)) == virtual_page && get<1>(page_v.at(i)) == threadid)
-        //     {
-        //         get<2> (page_v.at(i)) = get<2> (page_v.at(i)) + 1;
-        //         page_exist = 1;
-        //         break;
-        //     }
-        // }
+       
         log('r', virtual_page);
     
-
-        // page doesn't exist, add
-        // if (page_exist == 0){
-        //     rcount = 1;
-        //     page_v.push_back(make_tuple(virtual_page, threadid, rcount, wcount));
-        // }
-
-        // page_exist = 0;
         buffer.str("");
         PIN_ReleaseLock(&lock);
-    }
-    //fprintf(trace,"%p: R %p\n", ip, addr);
 }
 
 // Print a memory write record
 VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
 {
-    // write(output_file, "W", 1);
-
-    // buffer.clear();//clear any bits set
-    // buffer.str(std::string());
-    //stringstream buffer;
-    // start logging accesses when thread 1 begins
-    start_logging = 1;
-
-    if (start_logging == 1)
-    {
 
         PIN_GetLock(&lock, threadid + 1);
         buffer << addr;
@@ -235,73 +151,17 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
         string s = buffer.str();
         s.insert(2, "0000");
         s = s.substr(2, (s.length() - 1));
-        // cout << "s: " << s << endl;
 
         string addr_binary = GetBinaryStringFromHexString(s);
-
         string page_binary = bitset<64>(4096).to_string<char, std::string::traits_type, std::string::allocator_type>();
 
         unsigned long page_decimal = bitset<64>(page_binary).to_ulong();
         unsigned long addr_decimal = bitset<64>(addr_binary).to_ulong();
-        //bitset<64> b(n);
-        //string addr_binary = bitset<64>(n).to_string();
-
-        // cout << "page_binary: " << page_binary << endl;
-        //cout << "addr_binary: " << addr_binary << endl;
-        // cout << "page_decimal: " << page_decimal << " addr_decimal: " << addr_decimal << endl;
-
-        //cout << "~page_binary: " << ~(page_decimal-1) << endl;
         unsigned int virtual_page = (addr_decimal & ~(page_decimal - 1));
-        //cout << "Shifting Right: " << (addr_decimal >> 12) << endl;
-        //cout << "virtual_page: " << virtual_page << endl;
-        // cout << "addr_binary: " << b.to_string() << endl;
-        // buffer << setw(16) << setfill('0') << addr;
-
-        //int page_number_divided = address / sz ;
-        //cout << "page_number_divided: " << page_number_divided << endl;
-
-        // buffer << buffer.str();
-        // cout << "buffer before: " << buffer.str() << " addr before: " << addr << endl;
-        // buffer << hex << setw(16) << setfill('0') << addr;
-        //string firstEightBits = buffer.str().substr(0,3);
-        //unsigned int page_number = stoi(firstEightBits, 0, 16);
-
-        // cout << "buffer: " << buffer.str() << " firstEightBits: " << hex << firstEightBits << " page_number: " << page_number << " addr: " << addr << endl;
-        //  cout << "size: " << page_v.size() << endl;
-        // if (page_v.size() <= 0){
-        //    wcount = 1;
-        //    page_v.push_back(make_tuple(virtual_page, PIN_ThreadId(), rcount, wcount));
-        //page_v.push_back(make_tuple(page_number, 1, count));
-        //}
-
-        // int page_exist = 0;
-
-        // // check if the page exist and just increment the counter
-        // for (unsigned int i = 0; i < page_v.size(); i++)
-        // {
-        //     //cout << "size: " << page_v.size() << endl;
-        //     if (get<0>(page_v.at(i)) == virtual_page && get<1>(page_v.at(i)) == PIN_ThreadId())
-        //     {
-        //         get<3> (page_v.at(i)) = get<3> (page_v.at(i)) + 1;
-        //         page_exist = 1;
-        //         break;
-        //     }
-        // }
-
-        // // page doesn't exist, add
-        // if (page_exist == 0){
-        //     wcount = 1;
-        //     page_v.push_back(make_tuple(virtual_page, PIN_ThreadId(), rcount, wcount));
-        // }
-
-        // page_exist = 0;
-
+ 
         log('w', virtual_page);
-
-        buffer.str("");
         PIN_ReleaseLock(&lock);
-    }
-    //fprintf(trace,"%p: W %p\n", ip, addr);
+
 }
 
 // Is called for every instruction and instruments reads and writes
@@ -342,23 +202,6 @@ VOID Instruction(INS ins, VOID *v)
 
 VOID Fini(INT32 code, VOID *v)
 {
-    // ofstream myfile("memtracker.log");
-    // if (myfile.is_open()){
-    //     for (unsigned int i = 0; i < page_v.size(); i++){
-    //         // print only accesses whose read || write threshold exceeds a number i.e. 100
-    //         if (get<2>(page_v[i]) >= 100 || get<3>(page_v[i]) >= 100)
-    //         {
-    //             myfile << get<0>(page_v[i]) << ",";
-    //             myfile << get<1>(page_v[i]) << ",";
-    //             myfile << get<2>(page_v[i]) << ",";
-    //             myfile << get<3>(page_v[i]) << "\n";
-    //         }
-    //     }
-    // }
-    // else cout << "Unable to open file";
-    //fprintf(myfile, "#eof\n");
-    //fclose(myfile);
-
     close(output_file);
 }
 
@@ -381,20 +224,12 @@ int main(int argc, char *argv[])
     char file_name[50];
     sprintf(file_name, "trace_%lu.csv", (unsigned long)time(NULL));
     output_file = open(file_name, O_CREAT | O_RDWR);
-    write(output_file, "test\n", 5);
-    // Get the page_size()
-    //sz = sysconf(_SC_PAGESIZE);
-
-    //cout << "My Page Size is: " << sz << endl;
-
-    // Initialize the pin lock
+    // Initialze the pin lock
     PIN_InitLock(&lock);
 
     // Initialize pin
     if (PIN_Init(argc, argv))
         return Usage();
-
-    //trace = fopen("pinatrace.out", "w");
 
     INS_AddInstrumentFunction(Instruction, 0);
 
