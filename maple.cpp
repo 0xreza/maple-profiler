@@ -19,9 +19,11 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <bitset>
-#include <fcntl.h>  
-#include <unistd.h> 
+#include <fcntl.h>
+#include <unistd.h>
 
+#define PAGE_SIZE 4096
+#define OUTOUT_HEADERS "page,time,op\n"
 PIN_LOCK lock;
 
 FILE *trace;
@@ -37,7 +39,7 @@ int output_file;
 char buf[50];
 void log(char op, unsigned long page)
 {
-    sprintf(buf, "%c,%lu,%lu\n", op, page, (unsigned long)time(NULL));
+    sprintf(buf, "%lu,%lu,%c\n", page, (unsigned long)time(NULL), op);
     write(output_file, buf, strlen(buf));
 }
 
@@ -60,112 +62,31 @@ VOID ThreadFini(THREADID threadid, const CONTEXT *ctxt, INT32 code, VOID *v)
     PIN_ReleaseLock(&lock);
 }
 
-string GetBinaryStringFromHexString(string sHex)
-{
-    string sReturn = "";
-    for (unsigned int i = 0; i < sHex.length(); ++i)
-    {
-        switch (sHex[i])
-        {
-        case '0':
-            sReturn.append("0000");
-            break;
-        case '1':
-            sReturn.append("0001");
-            break;
-        case '2':
-            sReturn.append("0010");
-            break;
-        case '3':
-            sReturn.append("0011");
-            break;
-        case '4':
-            sReturn.append("0100");
-            break;
-        case '5':
-            sReturn.append("0101");
-            break;
-        case '6':
-            sReturn.append("0110");
-            break;
-        case '7':
-            sReturn.append("0111");
-            break;
-        case '8':
-            sReturn.append("1000");
-            break;
-        case '9':
-            sReturn.append("1001");
-            break;
-        case 'a':
-            sReturn.append("1010");
-            break;
-        case 'b':
-            sReturn.append("1011");
-            break;
-        case 'c':
-            sReturn.append("1100");
-            break;
-        case 'd':
-            sReturn.append("1101");
-            break;
-        case 'e':
-            sReturn.append("1110");
-            break;
-        case 'f':
-            sReturn.append("1111");
-            break;
-        }
-    }
-    return sReturn;
-}
-
 // Print a memory read record
 VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
 {
-        PIN_GetLock(&lock, threadid + 1);
-        buffer << addr;
-
-        string s = buffer.str();
-        s.insert(2, "0000");
-        s = s.substr(2, (s.length() - 1));
-
-        string addr_binary = GetBinaryStringFromHexString(s);
-
-        //tracing at the page level, page = 4096 bytes
-        string page_binary = bitset<64>(4096).to_string<char, std::string::traits_type, std::string::allocator_type>();
-
-        unsigned long page_decimal = bitset<64>(page_binary).to_ulong();
-        unsigned long addr_decimal = bitset<64>(addr_binary).to_ulong();;
-        unsigned int virtual_page = (addr_decimal & ~(page_decimal - 1));
-       
-        log('r', virtual_page);
-    
-        buffer.str("");
-        PIN_ReleaseLock(&lock);
+    PIN_GetLock(&lock, threadid + 1);
+    buffer << addr;
+    string s = buffer.str();
+    s = s.substr(2, (s.length() - 1));
+    unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
+    log('r', virtual_page);
+    buffer.str("");
+    PIN_ReleaseLock(&lock);
 }
 
 // Print a memory write record
 VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
 {
 
-        PIN_GetLock(&lock, threadid + 1);
-        buffer << addr;
-
-        string s = buffer.str();
-        s.insert(2, "0000");
-        s = s.substr(2, (s.length() - 1));
-
-        string addr_binary = GetBinaryStringFromHexString(s);
-        string page_binary = bitset<64>(4096).to_string<char, std::string::traits_type, std::string::allocator_type>();
-
-        unsigned long page_decimal = bitset<64>(page_binary).to_ulong();
-        unsigned long addr_decimal = bitset<64>(addr_binary).to_ulong();
-        unsigned int virtual_page = (addr_decimal & ~(page_decimal - 1));
- 
-        log('w', virtual_page);
-        PIN_ReleaseLock(&lock);
-
+    PIN_GetLock(&lock, threadid + 1);
+    buffer << addr;
+    string s = buffer.str();
+    s = s.substr(2, (s.length() - 1));
+    unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
+    log('r', virtual_page);
+    buffer.str("");
+    PIN_ReleaseLock(&lock);
 }
 
 // Is called for every instruction and instruments reads and writes
@@ -228,6 +149,8 @@ int main(int argc, char *argv[])
     char file_name[50];
     sprintf(file_name, "trace_%lu.csv", (unsigned long)time(NULL));
     output_file = open(file_name, O_CREAT | O_RDWR);
+    
+    write(output_file, OUTOUT_HEADERS, strlen(OUTOUT_HEADERS));
     // Initialze the pin lock
     PIN_InitLock(&lock);
 

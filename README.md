@@ -1,4 +1,4 @@
-# MAPLE: **M**emory **A**ccess **P**rofi**LE**r
+# :maple_leaf: MAPLE: **M**emory **A**ccess **P**rofi**LE**r
 
 MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)-based profiler to provide dumping memory access traces of applications at page-level. Currently, it records the _accessed virtual page number_, _timestamp_ and _r/w_. 
 > The supported output format is only **csv** at the moment; _binary_ and _vscsi_ will be added soon.
@@ -21,7 +21,7 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
     $ pin -t obj-intel64/maple.so -- [target_program]
 
-**[5]** Feed your trace into [mimircache!](http://mimircache.info/). Get excellent heat-maps and hit-rate curves! 
+**[5]** Feed your trace into [mimircache!](http://mimircache.info/). Get insightful heat-maps and hit-ratio curves! 
 
 
 
@@ -35,4 +35,4 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 ------------------------
 ### Authors and Contributors
-Maple is created by [Reza Karimi](http://0xreza.com), PhD student at Emory University, released on public domain under GPLv3.
+Maple is created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), released on public domain under GPLv3.
