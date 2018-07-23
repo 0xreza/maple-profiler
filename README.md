@@ -34,5 +34,7 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 -   Supporting spatio/temporal sampling 
 
 ------------------------
-### Authors and Contributors
-Maple is created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), released on public domain under GPLv3.
+### Credits
+Maple is released on public domain under GPLv3, created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), interning at [INESC-ID, Lisbon]() (Summer 2018)! with invaluable help (and base code) from David Gureya (PhD student at Instituto Superior Técnico), and priceless coaching received from my internship advisor, Joao Barreto.
+
+Contributions and suggestions are welcome!

@@ -35,11 +35,14 @@ stringstream buffer;
 
 long int *sz;
 
+unsigned long previous_access;
+unsigned long epoch;
+
 int output_file;
 char buf[50];
 void log(char op, unsigned long page)
 {
-    sprintf(buf, "%lu,%lu,%c\n", page, (unsigned long)time(NULL), op);
+    sprintf(buf, "%lu,%lu,%c\n", page, (unsigned long)time(0)-epoch, op);
     write(output_file, buf, strlen(buf));
 }
 
@@ -70,7 +73,10 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
     string s = buffer.str();
     s = s.substr(2, (s.length() - 1));
     unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
-    log('r', virtual_page);
+    if (previous_access != virtual_page){
+        log('r', virtual_page);
+        previous_access = virtual_page;
+    } 
     buffer.str("");
     PIN_ReleaseLock(&lock);
 }
@@ -84,7 +90,10 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
     string s = buffer.str();
     s = s.substr(2, (s.length() - 1));
     unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
-    log('r', virtual_page);
+    if (previous_access != virtual_page){
+        log('w', virtual_page);
+        previous_access = virtual_page;
+    } 
     buffer.str("");
     PIN_ReleaseLock(&lock);
 }
@@ -147,9 +156,10 @@ INT32 Usage()
 int main(int argc, char *argv[])
 {
     char file_name[50];
-    sprintf(file_name, "trace_%lu.csv", (unsigned long)time(NULL));
+    sprintf(file_name, "trace_%lu.csv", (unsigned long)time(0));
     output_file = open(file_name, O_CREAT | O_RDWR);
-    
+    previous_access = -1;
+    epoch = (unsigned long)time(NULL);
     write(output_file, OUTOUT_HEADERS, strlen(OUTOUT_HEADERS));
     // Initialze the pin lock
     PIN_InitLock(&lock);
