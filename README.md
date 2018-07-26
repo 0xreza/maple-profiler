@@ -3,6 +3,8 @@
 MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)-based profiler to provide dumping memory access traces of applications at page-level. Currently, it records the _accessed virtual page number_, _timestamp_ and _r/w_. 
 > The supported output format is only **csv** at the moment; _binary_ and _vscsi_ will be added soon.
 
+> MAPLE has a built-in LRU cache helping to eliminate redundant items which may get answered by front layer caches.
+
 **[1]** Install the [Pin tool](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)  on Linux. [Download](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads), unpack a kit and change to the directory.
 
     $ tar zxf pin-3.2-81205-gcc-linux.tar.gz
@@ -31,9 +33,9 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 <div style="display:block; width: 100%;">
 
 
-<img alt="mimircache maple hit-ratio curve" style="float: left; width=150px; max-height:250px" src="hrc.png" />
+<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc.png" />
 
-<img alt="mimircache maple heatmap" style=" width=150px; max-height:250px" src="heatmap.png" />
+<img alt="mimircache maple heatmap" height="280"  src="heatmap.png" />
 
 </div>
 
