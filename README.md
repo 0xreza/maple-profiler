@@ -21,11 +21,23 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
     $ pin -t obj-intel64/maple.so -- [target_program]
 
-**[5]** Feed your trace into [mimircache!](http://mimircache.info/). Get insightful heat-maps and hit-ratio curves! 
+**[5]** Feed your trace into [Mimircache!](http://mimircache.info/). Get insightful heat-maps and hit-ratio curves! 
 
 
+****
+
+###### Example:
+
+<div style="display:block; width: 100%;">
 
 
+<img alt="mimircache maple hit-ratio curve" style="float: left; width=150px; max-height:250px" src="hrc.png" />
+
+<img alt="mimircache maple heatmap" style=" width=150px; max-height:250px" src="heatmap.png" />
+
+</div>
+
+###### _plotted using traces gathered from [PARSEC, streamcluster](http://parsec.cs.princeton.edu) benchmark._
 
 ------------------------
 ### Work in Progress
