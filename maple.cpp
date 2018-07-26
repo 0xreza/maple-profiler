@@ -21,6 +21,11 @@
 #include <bitset>
 #include <fcntl.h>
 #include <unistd.h>
+#include <set>
+#include <map>
+#include <limits.h>
+
+using namespace std;
 
 #define L_CACHE_SIZE 256
 #define PAGE_SIZE 4096
@@ -39,24 +44,52 @@ long int *sz;
 unsigned long previous_access;
 unsigned long epoch;
 
-unsigned long l_cache[L_CACHE_SIZE] = {0};
+set<unsigned long> cache_set;
+map<unsigned long, unsigned long> cache_timestamp;
 
 int output_file;
 char buf[50];
 
-unsigned long index; 
+unsigned long hits = 0;
+unsigned long total = 0;
+
+unsigned int index;
 void log(char op, unsigned long page)
 {
-    // check if already in cache?
-    index = page%L_CACHE_SIZE;
-    if (l_cache[index] == page){
-        // do nothing 
-    } else {
-        l_cache[index] = page;
-        sprintf(buf, "%lu,%lu,%c\n", page, (unsigned long)time(0)-epoch, op);
+    unsigned long timestamp = (unsigned long)time(0) - epoch;
+    if (cache_set.count(page))
+    {                                      // on a hit
+        cache_timestamp[page] = timestamp; // just update the timestamp
+    }
+    else
+    { // on a miss
+        if (cache_set.size() <= L_CACHE_SIZE)
+        { // no need for eviction, yay!
+            cache_set.insert(page);
+            cache_timestamp[page] = timestamp;
+        }
+        else
+        { // must evict someone, so sad :(
+            unsigned long victim = -1;
+            unsigned long least_recently_used = ULONG_MAX;
+            for (map<unsigned long, unsigned long>::iterator it = cache_timestamp.begin(); it != cache_timestamp.end(); ++it)
+            {
+                if (it->second < least_recently_used)
+                {
+                    victim = it->first;
+                    least_recently_used = it->second;
+                }
+            }
+            cache_set.erase(victim);
+            cache_timestamp.erase(victim);
+
+            cache_set.insert(page);
+            cache_timestamp[page] = timestamp;
+        }
+
+        sprintf(buf, "%lu,%lu,%c\n", page, timestamp, op);
         write(output_file, buf, strlen(buf));
     }
-    
 }
 
 // This routine is executed every time a thread is created.
@@ -86,10 +119,11 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
     string s = buffer.str();
     s = s.substr(2, (s.length() - 1));
     unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
-    if (previous_access != virtual_page){
+    if (previous_access != virtual_page)
+    {
         log('r', virtual_page);
         previous_access = virtual_page;
-    } 
+    }
     buffer.str("");
     PIN_ReleaseLock(&lock);
 }
@@ -103,10 +137,11 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
     string s = buffer.str();
     s = s.substr(2, (s.length() - 1));
     unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
-    if (previous_access != virtual_page){
+    if (previous_access != virtual_page)
+    {
         log('w', virtual_page);
         previous_access = virtual_page;
-    } 
+    }
     buffer.str("");
     PIN_ReleaseLock(&lock);
 }
@@ -174,6 +209,7 @@ int main(int argc, char *argv[])
     previous_access = -1;
     epoch = (unsigned long)time(NULL);
     write(output_file, OUTOUT_HEADERS, strlen(OUTOUT_HEADERS));
+
     // Initialze the pin lock
     PIN_InitLock(&lock);
 
