@@ -33,6 +33,15 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 <div style="display:block; width: 100%;">
 
 
+<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc_ocean_ncp.png" />
+
+<img alt="mimircache maple heatmap" height="280"  src="heatmap_ocean_ncp.png" />
+
+</div>
+
+###### _plotted using traces gathered from [PARSEC, ocean_ncp](http://parsec.cs.princeton.edu) benchmark._
+
+
 <img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc.png" />
 
 <img alt="mimircache maple heatmap" height="280"  src="heatmap.png" />
@@ -49,6 +58,6 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 ------------------------
 ### Credits
-Maple is released on public domain under GPLv3, created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), interning at [INESC-ID, Lisbon]() (Summer 2018)! with invaluable help (and base code) from David Gureya (PhD student at Instituto Superior Técnico), and priceless coaching received from my internship advisor, Joao Barreto.
+Maple is released on public domain under GPLv3, created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), interning at [INESC-ID, Lisbon](http://inesc-id.pt) (Summer 2018)! with invaluable help of (and base code from) David Gureya (PhD student at Instituto Superior Técnico); and coaching by Joao Barreto, my internship advisor.
 
 Contributions and suggestions are welcome!
