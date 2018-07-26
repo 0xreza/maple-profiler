@@ -41,6 +41,7 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 ###### _plotted using traces gathered from [PARSEC, ocean_ncp](http://parsec.cs.princeton.edu) benchmark._
 
+<div style="display:block; width: 100%;">
 
 <img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc.png" />
 
