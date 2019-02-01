@@ -5,7 +5,7 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 > MAPLE has a built-in LRU cache helping to eliminate redundant items which may get answered by front layer caches.
 
-**[1]** Install the [Pin tool](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)  on Linux. [Download](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads), unpack a kit and change to the directory.
+**[1]** Install the [Pin tool](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)  on your Linux machine. [Download](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads), unpack a kit and `cd` to the directory.
 
     $ tar zxf pin-3.2-81205-gcc-linux.tar.gz
     $ cd pin-3.2-81205-gcc-linux
