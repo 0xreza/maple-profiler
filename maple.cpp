@@ -180,7 +180,7 @@ INT32 Usage() {
 
 int main(int argc, char *argv[]) {
   char file_name[50];
-  sprintf(file_name, "trace_%s_%lu.csv", KnobOutputFile.Value().c_str(), (unsigned long)time(0));
+  sprintf(file_name, "trace_%lu.csv", (unsigned long)time(0));
 
   output_file = open(file_name, O_CREAT | O_RDWR);
   previous_access = -1;
