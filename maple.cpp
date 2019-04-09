@@ -22,6 +22,7 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -112,7 +113,7 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long long virtual_address = stull(s.c_str(), NULL, 16);
+  unsigned long long virtual_address =  strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
 
@@ -131,7 +132,7 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long long virtual_address = stull(s.c_str(), NULL, 16);
+  unsigned long long virtual_address = strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
   
