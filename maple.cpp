@@ -27,12 +27,12 @@
 using namespace std;
 
 #define KB 1024
-#define MB KB*1024
-#define L_CACHE_SIZE 5*MB 
-#define PAGE_SIZE_ 4*KB
+#define MB (KB * 1024)
+#define L_CACHE_SIZE (5 * MB)
+#define PAGE_SIZE_ (4 * KB)
 #define ITEM_SIZE 64 // bytes
 
-#define L_CACHE_SIZE_ITEMS (int)(L_CACHE_SIZE/ITEM_SIZE)
+#define L_CACHE_SIZE_ITEMS (int)(L_CACHE_SIZE / ITEM_SIZE)
 
 #define OUTOUT_HEADERS "page,time,op\n"
 PIN_LOCK lock;
@@ -59,21 +59,30 @@ unsigned long hits = 0;
 unsigned long total = 0;
 
 unsigned int index;
-void log(char op, unsigned long long item, unsigned long long page) {
+void log(char op, unsigned long long item, unsigned long long page)
+{
   unsigned long timestamp = (unsigned long)time(0) - epoch;
-  if (cache_set.count(item)) {              // on a hit
-    cache_timestamp[item] = timestamp;      // just update the timestamp
-  } else {                                  // on a miss
-    if (cache_set.size() <= L_CACHE_SIZE_ITEMS) { // no need for eviction, yay!
+  if (cache_set.count(item))
+  {                                    // on a hit
+    cache_timestamp[item] = timestamp; // just update the timestamp
+  }
+  else
+  { // on a miss
+    if (cache_set.size() <= L_CACHE_SIZE_ITEMS)
+    { // no need for eviction, yay!
       cache_set.insert(item);
       cache_timestamp[item] = timestamp;
-    } else { // must evict someone, so sad :(
+    }
+    else
+    { // must evict someone, so sad :(
       unsigned long long victim = -1;
       unsigned long long least_recently_used = ULONG_LONG_MAX;
       for (map<unsigned long long, unsigned long long>::iterator it =
                cache_timestamp.begin();
-           it != cache_timestamp.end(); ++it) {
-        if (it->second < least_recently_used) {
+           it != cache_timestamp.end(); ++it)
+      {
+        if (it->second < least_recently_used)
+        {
           victim = it->first;
           least_recently_used = it->second;
         }
@@ -91,7 +100,8 @@ void log(char op, unsigned long long item, unsigned long long page) {
 }
 
 // This routine is executed every time a thread is created.
-VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v) {
+VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v)
+{
   PIN_GetLock(&lock, threadid + 1);
   cout << "thread begin: " << threadid << endl;
   // pid_t pid = getpid();
@@ -101,32 +111,31 @@ VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v) {
 }
 
 // This routine is executed every time a thread is destroyed.
-VOID ThreadFini(THREADID threadid, const CONTEXT *ctxt, INT32 code, VOID *v) {
+VOID ThreadFini(THREADID threadid, const CONTEXT *ctxt, INT32 code, VOID *v)
+{
   PIN_GetLock(&lock, threadid + 1);
   cout << "thread end: " << threadid << endl;
   PIN_ReleaseLock(&lock);
 }
 
 // Print a memory read record
-VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid) {
+VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid)
+{
   PIN_GetLock(&lock, threadid + 1);
   buffer << addr;
   string s = buffer.str();
   //s = s.substr(2, (s.length() - 1)); // removing 0x
-  unsigned long long virtual_address =  strtoull(s.c_str(), NULL, 16);
+  unsigned long long virtual_address = strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
-
-  if (previous_access != virtual_page) {
-    log('r', virtual_item, virtual_page);
-    previous_access = virtual_page;
-  }
+  log('r', virtual_item, virtual_page);
   buffer.str("");
   PIN_ReleaseLock(&lock);
 }
 
 // Print a memory write record
-VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
+VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid)
+{
 
   PIN_GetLock(&lock, threadid + 1);
   buffer << addr;
@@ -135,17 +144,14 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
   unsigned long long virtual_address = strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
-  
-  if (previous_access != virtual_page) {
-    log('w', virtual_item, virtual_page);
-    previous_access = virtual_page;
-  }
+  log('w', virtual_item, virtual_page);
   buffer.str("");
   PIN_ReleaseLock(&lock);
 }
 
 // Is called for every instruction and instruments reads and writes
-VOID Instruction(INS ins, VOID *v) {
+VOID Instruction(INS ins, VOID *v)
+{
 
   // Instruments memory accesses using a predicated call, i.e.
   // the instrumentation is called iff the instruction will actually be
@@ -156,8 +162,10 @@ VOID Instruction(INS ins, VOID *v) {
   UINT32 memOperands = INS_MemoryOperandCount(ins);
 
   // Iterate over each memory operand of the instruction.
-  for (UINT32 memOp = 0; memOp < memOperands; memOp++) {
-    if (INS_MemoryOperandIsRead(ins, memOp)) {
+  for (UINT32 memOp = 0; memOp < memOperands; memOp++)
+  {
+    if (INS_MemoryOperandIsRead(ins, memOp))
+    {
       INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)RecordMemRead,
                                IARG_INST_PTR, IARG_MEMORYOP_EA, memOp,
                                IARG_THREAD_ID, IARG_END);
@@ -165,7 +173,8 @@ VOID Instruction(INS ins, VOID *v) {
     // Note that in some architectures a single memory operand can be
     // both read and written (for instance incl (%eax) on IA-32)
     // In that case we instrument it once for read and once for write.
-    if (INS_MemoryOperandIsWritten(ins, memOp)) {
+    if (INS_MemoryOperandIsWritten(ins, memOp))
+    {
       INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)RecordMemWrite,
                                IARG_INST_PTR, IARG_MEMORYOP_EA, memOp,
                                IARG_THREAD_ID, IARG_END);
@@ -179,7 +188,8 @@ VOID Fini(INT32 code, VOID *v) { close(output_file); }
 /* Print Help Message                                                    */
 /* ===================================================================== */
 
-INT32 Usage() {
+INT32 Usage()
+{
   PIN_ERROR("This Pintool prints a trace of memory addresses\n" +
             KNOB_BASE::StringKnobSummary() + "\n");
   return -1;
@@ -189,7 +199,8 @@ INT32 Usage() {
 /* Main                                                                  */
 /* ===================================================================== */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   char file_name[50];
   sprintf(file_name, "trace_%lu.csv", (unsigned long)time(0));
 
