@@ -25,10 +25,14 @@
 
 using namespace std;
 
-#define L_CACHE_SIZE                                                           \
-  10000 // this is the built-in LRU cache size, if don't want it, set as 0;
-        // FIXME: there should be a flag to turn the caching ON and OFF
-#define PAGE_SIZE 4096
+#define KB 1024
+#define MB KB*1024
+#define L_CACHE_SIZE 5*MB 
+#define PAGE_SIZE_ 4*KB
+#define ITEM_SIZE 64 // bytes
+
+#define L_CACHE_SIZE_ITEMS (int)(L_CACHE_SIZE/ITEM_SIZE)
+
 #define OUTOUT_HEADERS "page,time,op\n"
 PIN_LOCK lock;
 
@@ -54,14 +58,14 @@ unsigned long hits = 0;
 unsigned long total = 0;
 
 unsigned int index;
-void log(char op, unsigned long page) {
+void log(char op, unsigned long item, unsigned long page) {
   unsigned long timestamp = (unsigned long)time(0) - epoch;
-  if (cache_set.count(page)) {              // on a hit
-    cache_timestamp[page] = timestamp;      // just update the timestamp
+  if (cache_set.count(item)) {              // on a hit
+    cache_timestamp[item] = timestamp;      // just update the timestamp
   } else {                                  // on a miss
     if (cache_set.size() <= L_CACHE_SIZE) { // no need for eviction, yay!
-      cache_set.insert(page);
-      cache_timestamp[page] = timestamp;
+      cache_set.insert(item);
+      cache_timestamp[item] = timestamp;
     } else { // must evict someone, so sad :(
       unsigned long victim = -1;
       unsigned long least_recently_used = ULONG_MAX;
@@ -76,8 +80,8 @@ void log(char op, unsigned long page) {
       cache_set.erase(victim);
       cache_timestamp.erase(victim);
 
-      cache_set.insert(page);
-      cache_timestamp[page] = timestamp;
+      cache_set.insert(item);
+      cache_timestamp[item] = timestamp;
     }
 
     sprintf(buf, "%lu,%lu,%c\n", page, timestamp, op);
@@ -108,9 +112,12 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
+  unsigned long virtual_address = strtol(s.c_str(), NULL, 16);
+  unsigned long virtual_item = virtual_address / ITEM_SIZE;
+  unsigned long virtual_page = virtual_address / PAGE_SIZE_;
+
   if (previous_access != virtual_page) {
-    log('r', virtual_page);
+    log('r', virtual_item, virtual_page);
     previous_access = virtual_page;
   }
   buffer.str("");
@@ -124,9 +131,12 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long virtual_page = strtol(s.c_str(), NULL, 16) / PAGE_SIZE;
+  unsigned long virtual_address = strtol(s.c_str(), NULL, 16);
+  unsigned long virtual_item = virtual_address / ITEM_SIZE;
+  unsigned long virtual_page = virtual_address / PAGE_SIZE_;
+  
   if (previous_access != virtual_page) {
-    log('w', virtual_page);
+    log('w', virtual_item, virtual_page);
     previous_access = virtual_page;
   }
   buffer.str("");
