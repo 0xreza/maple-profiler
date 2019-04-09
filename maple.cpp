@@ -64,7 +64,7 @@ void log(char op, unsigned long long item, unsigned long long page) {
   if (cache_set.count(item)) {              // on a hit
     cache_timestamp[item] = timestamp;      // just update the timestamp
   } else {                                  // on a miss
-    if (cache_set.size() <= L_CACHE_SIZE) { // no need for eviction, yay!
+    if (cache_set.size() <= L_CACHE_SIZE_ITEMS) { // no need for eviction, yay!
       cache_set.insert(item);
       cache_timestamp[item] = timestamp;
     } else { // must evict someone, so sad :(
@@ -112,7 +112,7 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid) {
   PIN_GetLock(&lock, threadid + 1);
   buffer << addr;
   string s = buffer.str();
-  s = s.substr(2, (s.length() - 1));
+  //s = s.substr(2, (s.length() - 1)); // removing 0x
   unsigned long long virtual_address =  strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
@@ -131,7 +131,7 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
   PIN_GetLock(&lock, threadid + 1);
   buffer << addr;
   string s = buffer.str();
-  s = s.substr(2, (s.length() - 1));
+  //s = s.substr(2, (s.length() - 1)); // removing 0x
   unsigned long long virtual_address = strtoull(s.c_str(), NULL, 16);
   unsigned long long virtual_item = virtual_address / ITEM_SIZE;
   unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
