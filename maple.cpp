@@ -45,11 +45,11 @@ stringstream buffer;
 
 long int *sz;
 
-unsigned long previous_access;
-unsigned long epoch;
+unsigned long long previous_access;
+unsigned long long epoch;
 
-set<unsigned long> cache_set;
-map<unsigned long, unsigned long> cache_timestamp;
+set<unsigned long long> cache_set;
+map<unsigned long long, unsigned long long> cache_timestamp;
 
 int output_file;
 char buf[50];
@@ -58,7 +58,7 @@ unsigned long hits = 0;
 unsigned long total = 0;
 
 unsigned int index;
-void log(char op, unsigned long item, unsigned long page) {
+void log(char op, unsigned long long item, unsigned long long page) {
   unsigned long timestamp = (unsigned long)time(0) - epoch;
   if (cache_set.count(item)) {              // on a hit
     cache_timestamp[item] = timestamp;      // just update the timestamp
@@ -67,9 +67,9 @@ void log(char op, unsigned long item, unsigned long page) {
       cache_set.insert(item);
       cache_timestamp[item] = timestamp;
     } else { // must evict someone, so sad :(
-      unsigned long victim = -1;
-      unsigned long least_recently_used = ULONG_MAX;
-      for (map<unsigned long, unsigned long>::iterator it =
+      unsigned long long victim = -1;
+      unsigned long long least_recently_used = ULONG_LONG_MAX;
+      for (map<unsigned long long, unsigned long long>::iterator it =
                cache_timestamp.begin();
            it != cache_timestamp.end(); ++it) {
         if (it->second < least_recently_used) {
@@ -84,7 +84,7 @@ void log(char op, unsigned long item, unsigned long page) {
       cache_timestamp[item] = timestamp;
     }
 
-    sprintf(buf, "%lu,%lu,%c\n", page, timestamp, op);
+    sprintf(buf, "%llu,%lu,%c\n", page, timestamp, op);
     write(output_file, buf, strlen(buf));
   }
 }
@@ -112,9 +112,9 @@ VOID RecordMemRead(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long virtual_address = strtol(s.c_str(), NULL, 16);
-  unsigned long virtual_item = virtual_address / ITEM_SIZE;
-  unsigned long virtual_page = virtual_address / PAGE_SIZE_;
+  unsigned long long virtual_address = stull(s.c_str(), NULL, 16);
+  unsigned long long virtual_item = virtual_address / ITEM_SIZE;
+  unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
 
   if (previous_access != virtual_page) {
     log('r', virtual_item, virtual_page);
@@ -131,9 +131,9 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, THREADID threadid) {
   buffer << addr;
   string s = buffer.str();
   s = s.substr(2, (s.length() - 1));
-  unsigned long virtual_address = strtol(s.c_str(), NULL, 16);
-  unsigned long virtual_item = virtual_address / ITEM_SIZE;
-  unsigned long virtual_page = virtual_address / PAGE_SIZE_;
+  unsigned long long virtual_address = stull(s.c_str(), NULL, 16);
+  unsigned long long virtual_item = virtual_address / ITEM_SIZE;
+  unsigned long long virtual_page = virtual_address / PAGE_SIZE_;
   
   if (previous_access != virtual_page) {
     log('w', virtual_item, virtual_page);
