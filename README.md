@@ -7,23 +7,23 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 **[1]** Install the [Pin tool](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)  on your Linux machine. [Download](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads), unpack a kit and `cd` to the directory.
 
-    $ tar zxf pin-3.2-81205-gcc-linux.tar.gz
-    $ cd pin-3.2-81205-gcc-linux
+    $ tar zxf pin-[version].tar.gz
+    $ cd pin-[version]/source/tools
 
 **[2]** Clone the __MAPLE!__ :maple_leaf:
 
     $ git clone https://github.com/0xreza/maple-profiler.git
 
-**[3]** Make the module:
-
+**[3]** Make the module (for your target architecture):
     $ cd maple-profiler
+    $ mkdir obj-intel64
     $ make obj-intel64/maple.so TARGET=intel64
 
 **[4]** Run the experiment:
 
-    $ pin -t obj-intel64/maple.so -- [target_program]
+    $ ../../../pin -t obj-intel64/maple.so -- [target_program]
 
-**[5]** Feed your trace into [Mimircache!](http://mimircache.info/). Get insightful heat-maps and hit-ratio curves! 
+**[5]** You can feed your trace into [Mimircache!](http://mimircache.info/) to get insightful heat-maps and hit-ratio curves! 
 
 
 ****
@@ -59,6 +59,6 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 ------------------------
 ### Credits
-Maple is released on public domain under GPLv3, created by [Reza Karimi](http://0xreza.com), PhD student at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), interning at [INESC-ID, Lisbon](http://inesc-id.pt) (Summer 2018)! with invaluable help of (and base code from) David Gureya (PhD student at Instituto Superior Técnico); and coaching by Joao Barreto, my internship advisor.
+Maple is released on public domain under GPLv3, created by [Reza Karimi](https://0xreza.com), PhD candidate at [SimBioSysLab, Emory University](https://simbiosyslab.github.io/), while interning at [INESC-ID, Lisbon](http://inesc-id.pt) (Summer 2018) with invaluable help of (and base code from) David Gureya (PhD student at Instituto Superior Técnico); and coaching by Joao Barreto, my internship mentor.
 
 Contributions and suggestions are welcome!
