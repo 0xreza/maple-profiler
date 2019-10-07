@@ -15,6 +15,7 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
     $ git clone https://github.com/0xreza/maple-profiler.git
 
 **[3]** Make the module (for your target architecture):
+
     $ cd maple-profiler
     $ mkdir obj-intel64
     $ make obj-intel64/maple.so TARGET=intel64
@@ -33,9 +34,9 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 <div style="display:block; width: 100%;">
 
 
-<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc_ocean_ncp.png" />
+<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="examples/hrc_ocean_ncp.png" />
 
-<img alt="mimircache maple heatmap" height="280"  src="heatmap_ocean_ncp.png" />
+<img alt="mimircache maple heatmap" height="280"  src="examples/heatmap_ocean_ncp.png" />
 
 </div>
 
@@ -43,9 +44,9 @@ MAPLE is a [Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-
 
 <div style="display:block; width: 100%;">
 
-<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="hrc.png" />
+<img alt="mimircache maple hit-ratio curve" style="float: left;"  height="280" src="examples/hrc.png" />
 
-<img alt="mimircache maple heatmap" height="280"  src="heatmap.png" />
+<img alt="mimircache maple heatmap" height="280"  src="examples/heatmap.png" />
 
 </div>
 
